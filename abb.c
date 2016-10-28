@@ -57,7 +57,7 @@ bool _abb_guardar(nodo_abb* padre,const char* clave, void* dato, int lado){
 bool _abb_guardar_aux(nodo_abb* actual, const char* clave, void* dato, abb_comparar_clave_t cmp){
     // Primitiva auxiliar recursiva
     int res = cmp(actual->clave, clave);
-    if ((!actual->der && res == -1) || (!actual->der && res == 1))
+    if ((!actual->der && res == -1) || (!actual->izq && res == 1))
         return _abb_guardar(actual, clave, dato, res);
     return _abb_guardar_aux(actual,clave,dato,cmp);
 }
@@ -111,27 +111,43 @@ int _cant_hijos(nodo_abb* nodo){
     return hijos;
 }
 
-void _borrar_hoja(nodo_abb* nodo, abb_destruir_dato_t destructor){
-    nodo->destructor(nodo->dato);
+void* _borrar_hoja(abb_t* arbol, nodo_abb* nodo){
+    void* dato = nodo->dato;
     free(nodo);
+    arbol->cantidad--;
+    return dato;
 }
 
 void *abb_borrar(abb_t *arbol, const char *clave){
-    if (!abb_pertenece(arbol,clave)) return;
+    if (!abb_pertenece(arbol,clave)) return NULL;
     nodo_abb* padre = arbol->raiz;
     nodo_abb* nodo = buscar_nodo(arbol->raiz, arbol->cmp, clave, &padre);
-    if (_cant_hijos(nodo) == 0) {
-        _borrar_hoja(nodo, arbol->destructor);
+    int cant_hijos = _cant_hijos(nodo);
+    void* dato;
+    bool der = false;
+    if (cant_hijos == 0) {
+        //tengo problemas con esto!!!! tengo q asignar a null??
+        if (padre->der == nodo) der = true;
+        dato = nodo->dato;
+        free(nodo);
+        arbol->cantidad--;
+        if (der) padre->der = NULL;
+        else padre->izq = NULL;
+        return dato;
     }
-    else if (_cant_hijos(nodo) == 1){
-        nodo_abb* aux = nodo->der;
+    else if (cant_hijos == 2){
+        // falta caso 2 hijos
+        return NULL;
+    }
+    else {
+        nodo_abb* aux;
+        if (cant_hijos == -1) aux =     nodo->izq;
+        else aux = nodo->der;
         if (padre->der == nodo) padre->der = aux;
         else if (padre->izq == nodo) padre->izq = aux;
-        _borrar_hoja(nodo);
+        return _borrar_hoja(arbol,nodo);
     }
-    arbol->cantidad--;
-    return;
-    // falta caso 2 hijos
+    return NULL;
 }
 
 void *abb_obtener(const abb_t *arbol, const char *clave){
@@ -144,7 +160,7 @@ void *abb_obtener(const abb_t *arbol, const char *clave){
 
 bool abb_pertenece(const abb_t *arbol, const char *clave){
     nodo_abb* padre = arbol->raiz;
-    if (!buscar_nodo(arbol->raiz,  arbol->cmp, clave, &padre))
+    if (!buscar_nodo(arbol->raiz, arbol->cmp, clave, &padre))
         return false;
     return true;
 }
@@ -160,7 +176,7 @@ void _abb_destruir(nodo_abb* nodo, abb_destruir_dato_t destructor){
     nodo->der = NULL;
     _abb_destruir(nodo->izq,destructor);
     nodo->izq = NULL;
-    destructor(nodo->dato);
+    if (destructor){destructor(nodo->dato);}
     free(nodo);
 }
 void abb_destruir(abb_t *arbol){
