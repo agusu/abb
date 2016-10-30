@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include "testing.h"
-typedef struct nodo_abb nodo_abb;
-nodo_abb* nodo_abb_crear(const char* clave, void* dato);
+
+
 typedef struct abb abb_t;
 
 typedef int (*abb_comparar_clave_t) (const char *, const char *);
