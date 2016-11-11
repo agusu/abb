@@ -3,24 +3,20 @@ C_FLAGS = -g -O2 -std=c99 -Wall -Wconversion -Wno-sign-conversion -Wbad-function
 DEFAULT = TPAbb
 OBJ_ABB = abb
 OBJ_PILA = pila
+OBJ_COLA = cola
+OBJ_LISTA = lista
 OBJ_TESTING  = testing
-OBJS =  $(OBJ_ABB).o $(OBJ_PILA).o $(OBJ_TESTING).o
+OBJS =  $(OBJ_ABB).o $(OBJ_PILA).o $(OBJ_TESTING).o $(OBJ_LISTA).o $(OBJ_COLA).o
 VALGRIND = valgrind
 V_FLAGS = --leak-check=full --track-origins=yes --show-reachable=yes
 
 all: $(DEFAULT)
 
 $(DEFAULT): clean $(OBJS)
-		$(CC) $(C_FLAGS) main.c $(OBJS) pruebas_alumnos.c  -o $(DEFAULT)
+		$(CC) $(C_FLAGS) main.c $(OBJS) pruebas_alumnos.c -o $(DEFAULT)
 
-$(OBJ_ABB).o: $(OBJ_ABB).c $(OBJ_ABB).h
-		$(CC) $(C_FLAGS) $(OBJ_ABB).c -c
-
-$(OBJ_PILA).o: $(OBJ_PILA).c $(OBJ_PILA).h
-		$(CC) $(C_FLAGS) $(OBJ_PILA).c -c
-
-$(OBJ_TESTING).o: $(OBJ_TESTING).c $(OBJ_TESTING).h
-		$(CC) $(C_FLAGS) $(OBJ_TESTING).c -c
+%.o : %.c %.c
+		$(CC) $(CFLAGS) $< -c
 
 run: $(DEFAULT)
 		$(VALGRIND) $(V_FLAGS) ./$(DEFAULT)
