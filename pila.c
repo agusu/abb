@@ -78,7 +78,7 @@ void* pila_ver_tope(const pila_t *pila){
   if (pila_esta_vacia(pila)){
     return NULL;
   }
-  return pila->datos[pila->cantidad-1];
+  return pila->datos[pila->cantidad - 1];
 }
 /* Desapilar de la pila*/
 void* pila_desapilar(pila_t *pila){
@@ -97,6 +97,6 @@ void* pila_desapilar(pila_t *pila){
       pila_redimensionar(pila, TAM_INICIAL_PILA);
     }
   }
-  pila->cantidad -= 1;
+  pila->cantidad--;
   return dato;
 }

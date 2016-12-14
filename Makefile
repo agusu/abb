@@ -15,7 +15,7 @@ all: $(DEFAULT)
 $(DEFAULT): clean $(OBJS)
 		$(CC) $(C_FLAGS) main.c $(OBJS) pruebas_alumnos.c -o $(DEFAULT)
 
-%.o : %.c %.c
+%.o : %.c %.h
 		$(CC) $(CFLAGS) $< -c
 
 run: $(DEFAULT)

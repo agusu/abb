@@ -23,6 +23,16 @@ typedef struct abb_iter{
 	pila_t* pila;
 }abb_iter_t;
 
+typedef struct abb_iter_post{
+	const abb_t* arbol;
+	pila_t* pila;
+}abb_iter_post_t;
+
+typedef struct abb_item{
+    const char* clave;
+    void* valor;
+} abb_item_t;
+
 
 /******************************************************************
  *		                  FUNCIONES AUXILIARES                      *
@@ -311,4 +321,98 @@ void abb_in_order(abb_t *arbol, bool visitar(const char *, void *, void *), void
 		actual = pila_desapilar(pila);
 	}
 	pila_destruir(pila);
+}
+
+
+/******************************************************************
+ *			            ITERADOR EXTERNO POST ORDEN ABB               *
+ ******************************************************************/
+
+bool es_hijo_izq(nodo_abb_t *desapilado, nodo_abb_t *tope_nuevo){
+	if(!tope_nuevo || !tope_nuevo->izq) return false;
+	return strcmp(desapilado->clave, tope_nuevo->izq->clave) == 0;
+}
+
+void abb_traza_izq(pila_t *pila, nodo_abb_t *nodo_abb){
+	if(!nodo_abb) return;
+	pila_apilar(pila, nodo_abb);
+	if(nodo_abb->izq) abb_traza_izq(pila, nodo_abb->izq);
+	else abb_traza_izq(pila, nodo_abb->der);
+}
+
+abb_iter_post_t *abb_iter_post_crear(const abb_t *arbol){
+	abb_iter_post_t *iter = malloc(sizeof(abb_iter_t));
+	if (!iter) return NULL;
+	iter->pila = pila_crear();
+	if(!iter->pila){
+		free(iter);
+		return NULL;
+	}
+	iter->arbol = arbol;
+	abb_traza_izq(iter->pila, iter->arbol->raiz);
+	return iter;
+}
+
+bool abb_iter_post_al_final(const abb_iter_post_t* iter){
+	return pila_esta_vacia(iter->pila);
+}
+
+const char* abb_iter_post_ver_actual(const abb_iter_post_t* iter){
+	if(abb_iter_post_al_final(iter)) return NULL;
+	nodo_abb_t* tope = pila_ver_tope(iter->pila);
+	return tope->clave;
+}
+
+bool abb_iter_post_avanzar(abb_iter_post_t* iter){
+	if(abb_iter_post_al_final(iter)) return false;
+	nodo_abb_t *desapilado = pila_desapilar(iter->pila);
+	if(es_hijo_izq(desapilado, pila_ver_tope(iter->pila)))
+		abb_traza_izq(iter->pila, ((nodo_abb_t *)pila_ver_tope(iter->pila))->der);
+	return true;
+}
+
+void abb_iter_post_destruir(abb_iter_post_t* iter){
+	pila_destruir(iter->pila);
+	free(iter);
+}
+
+/******************************************************************
+ *			           ITERADOR INTERNO  POST ORDEN ABB               *
+ ******************************************************************/
+
+void abb_post_order(abb_t *arbol, bool visitar(const char *, void *, void *), void *extra){
+	pila_t* pila = pila_crear();
+	if(!pila) return;
+	abb_traza_izq(pila, arbol->raiz);
+	nodo_abb_t *actual = pila_desapilar(pila);
+	while(actual && visitar(actual->clave, actual->dato, extra)){
+		if(es_hijo_izq(actual, pila_ver_tope(pila)))
+			abb_traza_izq(pila, ((nodo_abb_t *)pila_ver_tope(pila))->der);
+		actual = pila_desapilar(pila);
+	}
+	pila_destruir(pila);
+}
+
+abb_item_t _abb_nodo_a_item(nodo_abb_t* nodo){
+    abb_item_t item;
+    item.clave = nodo->clave;
+    item.valor = nodo->dato;
+    return item;
+}
+
+abb_item_t* abb_obtener_items(abb_t* abb){
+    abb_item_t* lista = malloc(sizeof(abb_item_t)*abb_cantidad(abb));
+    pila_t* pila = pila_crear();
+    if (!lista || !pila) return lista;
+    abb_iterar_izq(pila,abb->raiz);
+    size_t i = 0;
+    nodo_abb_t* actual;
+    while (!pila_esta_vacia(pila)){
+        actual = pila_desapilar(pila);
+        lista[i] = _abb_nodo_a_item(actual);
+        abb_iterar_izq(pila,actual->der);
+        i++;
+    }
+    pila_destruir(pila);
+    return lista;
 }

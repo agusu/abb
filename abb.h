@@ -34,3 +34,19 @@ bool abb_iter_in_al_final(const abb_iter_t *iter);
 void abb_iter_in_destruir(abb_iter_t* iter);
 
 void abb_in_order(abb_t *arbol, bool visitar(const char *, void *, void *), void *extra);
+
+typedef struct abb_iter_post abb_iter_post_t;
+
+abb_iter_post_t*  abb_iter_post_crear(const abb_t* arbol);
+
+bool  abb_iter_post_avanzar(abb_iter_post_t* iter);
+
+const char*  abb_iter_post_ver_actual(const abb_iter_post_t* iter);
+
+bool  abb_iter_post_al_final(const abb_iter_post_t* iter);
+
+void  abb_iter_post_destruir(abb_iter_post_t* iter);
+
+void abb_post_order(abb_t *arbol, bool visitar(const char *, void *, void *), void *extra);
+
+typedef struct abb_item abb_item_t;
